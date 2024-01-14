@@ -6,6 +6,9 @@
 # Install Django and Django REST framework
 pip install django djangorestframework
 
+# Install beautifulSoup
+pip install beautifulsoup4
+
 # Create a new Django project
 django-admin startproject myproject
 
@@ -20,6 +23,7 @@ python manage.py migrate
 
 # Start the Django development server
 python manage.py runserver
+
 
 
 
