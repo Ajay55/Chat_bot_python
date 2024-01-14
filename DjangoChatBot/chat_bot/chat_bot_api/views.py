@@ -24,7 +24,18 @@ def get_answer(request):
     question = request.query_params.get('question', '')
     inputs = tokenizer(question, paragraph, return_tensors="pt")
     outputs = model(**inputs)
-    answer_start = outputs.start_logits.argmax()
-    answer_end = outputs.end_logits.argmax() + 1
-    answer = tokenizer.convert_tokens_to_string(tokenizer.convert_ids_to_tokens(inputs["input_ids"][0][answer_start:answer_end]))
-    return Response({'question': question, 'answer': answer})
+    
+    start_logits = outputs.start_logits.softmax(dim=1).squeeze()
+    end_logits = outputs.end_logits.softmax(dim=1).squeeze()
+
+    confidence = max(start_logits.max().item(), end_logits.max().item())
+
+    if confidence > 0.5:
+        answer_start = start_logits.argmax()
+        answer_end = end_logits.argmax() + 1
+        answer = tokenizer.convert_tokens_to_string(tokenizer.convert_ids_to_tokens(inputs["input_ids"][0][answer_start:answer_end]))
+        response_data = {'question': question, 'answer': answer, 'confidence': confidence}
+    else:
+        response_data = {'question': question, 'answer': "Sorry, we don't know", 'confidence': confidence}
+
+    return Response(response_data)
